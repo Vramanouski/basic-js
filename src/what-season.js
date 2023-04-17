@@ -11,7 +11,7 @@ const { NotImplementedError } = require('../extensions/index.js');
  * getSeason(new Date(2020, 02, 31)) => 'spring'
  * 
  */
-function getSeason(/* date */) {
+function getSeason(date) {
   if (date == undefined) return 'Unable to determine the time of year!';
   if (!(date instanceof Date) || date[Symbol.toStringTag]==="Date") throw new Error('Invalid date!');
   let seasons = ['winter', 'spring', 'summer', 'autumn'];
