@@ -1,86 +1,95 @@
 const { NotImplementedError } = require("../extensions/index.js");
-
 class VigenereCipheringMachine {
-  constructor(isDirect = true) {
-    this.isDirect = isDirect;
+  constructor(isDirectMachine = true) {
+    this.isDirectMachine = isDirectMachine;
     this.alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    this.radix = this.alphabet.length;
+    this.alphabetLength = this.alphabet.length;
   }
 
-  encrypt(message, key) {
-    if (!message || !key) {
+  encrypt(inputMessage, inputKey, isDecrypt = false) {
+    if (!inputMessage) {
+      throw new Error("Incorrect arguments!");
+    }
+    if (!inputKey) {
       throw new Error("Incorrect arguments!");
     }
 
-    message = message.toUpperCase();
-    key = key.toUpperCase();
+    const characterShift = {
+      A: 0,
+      B: 1,
+      C: 2,
+      D: 3,
+      E: 4,
+      F: 5,
+      G: 6,
+      H: 7,
+      I: 8,
+      J: 9,
+      K: 10,
+      L: 11,
+      M: 12,
+      N: 13,
+      O: 14,
+      P: 15,
+      Q: 16,
+      R: 17,
+      S: 18,
+      T: 19,
+      U: 20,
+      V: 21,
+      W: 22,
+      X: 23,
+      Y: 24,
+      Z: 25,
+    };
 
     let result = "";
     let keyIndex = 0;
+    let extendedKey = inputKey.toUpperCase();
 
-    for (let i = 0; i < message.length; i++) {
-      const messageChar = message[i];
-      if (this.alphabet.includes(messageChar)) {
-        const messageIndex = this.alphabet.indexOf(messageChar);
-        const keyChar = key[keyIndex % key.length];
-        const keyIndexInAlphabet = this.alphabet.indexOf(keyChar);
+    while (extendedKey.length < inputMessage.length) {
+      extendedKey += extendedKey;
+    }
+    extendedKey = extendedKey.slice(0, inputMessage.length);
 
-        if (this.isDirect) {
-          const encryptedIndex =
-            (messageIndex + keyIndexInAlphabet) % this.radix;
-          result += this.alphabet[encryptedIndex];
+    const messageArray = [...inputMessage.toUpperCase()];
+
+    messageArray.forEach((char) => {
+      if (char.charCodeAt() >= 65 && char.charCodeAt() <= 90) {
+        let movedChar;
+        if (!isDecrypt) {
+          movedChar = char.charCodeAt() + characterShift[extendedKey[keyIndex]];
+          if (movedChar > 90) {
+            movedChar = movedChar - 90 + 64;
+          }
         } else {
-          const decryptedIndex =
-            (messageIndex - keyIndexInAlphabet + this.radix) % this.radix;
-          result += this.alphabet[decryptedIndex];
+          movedChar = char.charCodeAt() - characterShift[extendedKey[keyIndex]];
+          if (movedChar < 65) {
+            movedChar = 90 - 64 + movedChar;
+          }
         }
-
+        result += String.fromCharCode(movedChar);
         keyIndex++;
       } else {
-        result += messageChar;
+        result += char;
       }
-    }
+    });
 
-    return result;
+    if (this.isDirectMachine) {
+      return result;
+    } else {
+      return result.split("").reverse().join("");
+    }
   }
 
-  decrypt(encryptedMessage, key) {
-    if (!encryptedMessage || !key) {
-      throw new Error("Incorrect arguments!");
-    }
-
-    encryptedMessage = encryptedMessage.toUpperCase();
-    key = key.toUpperCase();
-
-    let result = "";
-    let keyIndex = 0;
-
-    for (let i = 0; i < encryptedMessage.length; i++) {
-      const encryptedChar = encryptedMessage[i];
-      if (this.alphabet.includes(encryptedChar)) {
-        const encryptedIndex = this.alphabet.indexOf(encryptedChar);
-        const keyChar = key[keyIndex % key.length];
-        const keyIndexInAlphabet = this.alphabet.indexOf(keyChar);
-
-        if (this.isDirect) {
-          const decryptedIndex =
-            (encryptedIndex - keyIndexInAlphabet + this.radix) % this.radix;
-          result += this.alphabet[decryptedIndex];
-        } else {
-          const encryptedIndexInAlphabet =
-            (encryptedIndex + keyIndexInAlphabet) % this.radix;
-          result += this.alphabet[encryptedIndexInAlphabet];
-        }
-
-        keyIndex++;
-      } else {
-        result += encryptedChar;
-      }
-    }
-
-    return result;
+  decrypt(encryptedMessage, inputKey) {
+    return this.encrypt(encryptedMessage, inputKey, true);
   }
 }
+
+module.exports = {
+  VigenereCipheringMachine,
+};
 
 module.exports = {
   VigenereCipheringMachine,
